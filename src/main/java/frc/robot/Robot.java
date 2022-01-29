@@ -7,6 +7,9 @@ package frc.robot;
 import edu.wpi.first.wpilibj.TimedRobot;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.CommandScheduler;
+import edu.wpi.first.wpilibj.XboxController;
+
+import frc.robot.subsystems.Chassis;
 
 /**
  * The VM is configured to automatically run this class, and to call the functions corresponding to
@@ -18,6 +21,8 @@ public class Robot extends TimedRobot {
   private Command m_autonomousCommand;
 
   private RobotContainer m_robotContainer;
+  XboxController stick = new XboxController(0);
+  private Chassis driveControl = new Chassis();
 
   /**
    * This function is run when the robot is first started up and should be used for any
@@ -81,7 +86,14 @@ public class Robot extends TimedRobot {
 
   /** This function is called periodically during operator control. */
   @Override
-  public void teleopPeriodic() {}
+  public void teleopPeriodic() {
+    if(stick.getRightTriggerAxis() > 0){
+      // FLOAT IS VERY IMPORTANT, DO NOT TOUCH!!!
+      driveControl.drive((float) stick.getLeftY(), 0.0);
+    } else {
+      driveControl.drive((float) 0.0, 0.0);
+    }
+  }
 
   @Override
   public void testInit() {
