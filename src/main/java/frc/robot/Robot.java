@@ -4,6 +4,9 @@
 
 package frc.robot;
 
+import com.ctre.phoenix.motorcontrol.can.TalonSRX;
+import com.ctre.phoenix.motorcontrol.can.WPI_TalonSRX;
+
 import edu.wpi.first.wpilibj.TimedRobot;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.CommandScheduler;
@@ -23,6 +26,8 @@ public class Robot extends TimedRobot {
   private RobotContainer m_robotContainer;
   XboxController stick = new XboxController(0);
   private Chassis driveControl = new Chassis();
+  private WPI_TalonSRX spinMotor;
+  private WPI_TalonSRX sideSpinMotor;
 
   /**
    * This function is run when the robot is first started up and should be used for any
@@ -33,6 +38,10 @@ public class Robot extends TimedRobot {
     // Instantiate our RobotContainer.  This will perform all our button bindings, and put our
     // autonomous chooser on the dashboard.
     m_robotContainer = new RobotContainer();
+    spinMotor = new WPI_TalonSRX(13);
+    sideSpinMotor = new WPI_TalonSRX(14);
+    
+    
   }
 
   /**
@@ -71,7 +80,9 @@ public class Robot extends TimedRobot {
 
   /** This function is called periodically during autonomous. */
   @Override
-  public void autonomousPeriodic() {}
+  public void autonomousPeriodic() {
+    driveControl.drive(0, 0.1);
+  }
 
   @Override
   public void teleopInit() {
@@ -87,12 +98,26 @@ public class Robot extends TimedRobot {
   /** This function is called periodically during operator control. */
   @Override
   public void teleopPeriodic() {
-    if(stick.getRightTriggerAxis() > 0){
-      // FLOAT IS VERY IMPORTANT, DO NOT TOUCH!!!
-      driveControl.drive((float) stick.getLeftY(), 0.0);
+    double speed = 0;
+    double angle = 0;
+    double speedmult = 0.5;
+    if (stick.getXButton())
+      speedmult = 1.0;
+
+    sideSpinMotor.set(stick.getLeftTriggerAxis());
+    spinMotor.set(stick.getRightTriggerAxis());
+
+    if (Constants.SWAP_CONTROLLER_XY) {
+      speed = stick.getLeftX();
+      angle = stick.getLeftY();
     } else {
-      driveControl.drive((float) 0.0, 0.0);
+      speed = stick.getLeftY();
+      angle = stick.getLeftX();
     }
+    driveControl.drive(
+        Math.pow(speed,3)*speedmult,
+        Math.pow(angle,3)*speedmult
+      );
   }
 
   @Override
@@ -103,5 +128,7 @@ public class Robot extends TimedRobot {
 
   /** This function is called periodically during test mode. */
   @Override
-  public void testPeriodic() {}
+  public void testPeriodic() {
+    driveControl.drive(0, 0.5);
+  }
 }
